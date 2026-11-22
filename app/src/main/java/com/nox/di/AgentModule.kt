@@ -10,6 +10,7 @@ import com.nox.feature.agent.domain.tool.root.RootShellTool
 import com.nox.feature.agent.data.local.dao.RootGrantDao
 import com.nox.feature.agent.data.local.dao.ChatSessionDao
 import com.nox.feature.agent.data.local.dao.CheckpointDao
+import com.nox.feature.agent.data.local.dao.KnowledgeEntryDao
 import com.nox.feature.agent.data.local.dao.LlmCallRecordDao
 import com.nox.feature.agent.data.local.dao.TodoItemDao
 import com.nox.feature.backup.data.local.dao.BackupTargetDao
@@ -20,6 +21,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import com.nox.feature.agent.data.remote.anthropic.AnthropicApi
 import com.nox.feature.agent.data.remote.gemini.GeminiApi
 import com.nox.feature.agent.data.remote.openai.OpenAIApi
+import com.nox.feature.agent.domain.knowledge.KnowledgeRepository
 import com.nox.feature.agent.domain.container.CommandEngine
 import com.nox.feature.agent.domain.container.DelegatingCommandEngine
 import com.nox.feature.agent.domain.container.LinuxContainerEngine
@@ -161,6 +163,12 @@ object AgentModule {
     @Singleton
     fun provideLlmCallRecordDao(database: AgentDatabase): LlmCallRecordDao {
         return database.llmCallRecordDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideKnowledgeEntryDao(database: AgentDatabase): KnowledgeEntryDao {
+        return database.knowledgeEntryDao()
     }
 
     @Provides
@@ -451,6 +459,7 @@ object AgentModule {
         messagePersistenceUseCase: MessagePersistenceUseCase,
         checkpointManager: CheckpointManager,
         llmCallRecordDao: LlmCallRecordDao,
+        knowledgeRepository: KnowledgeRepository,
         keyRotator: ProviderKeyRotator,
         agentNotificationCenter: AgentNotificationCenter,
         eventInjector: AgentEventInjector,
@@ -478,6 +487,7 @@ object AgentModule {
             messagePersistenceUseCase,
             checkpointManager,
             llmCallRecordDao,
+            knowledgeRepository,
             keyRotator,
             agentNotificationCenter,
             eventInjector,

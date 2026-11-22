@@ -5,6 +5,7 @@ import androidx.room.RoomDatabase
 import com.nox.feature.agent.data.local.dao.AgentMessageDao
 import com.nox.feature.agent.data.local.dao.ChatSessionDao
 import com.nox.feature.agent.data.local.dao.CheckpointDao
+import com.nox.feature.agent.data.local.dao.KnowledgeEntryDao
 import com.nox.feature.agent.data.local.dao.LlmCallRecordDao
 import com.nox.feature.agent.data.local.dao.RootGrantDao
 import com.nox.feature.agent.data.local.dao.TodoItemDao
@@ -12,6 +13,7 @@ import com.nox.feature.agent.data.local.entity.AgentMessageEntity
 import com.nox.feature.agent.data.local.entity.ChatSessionEntity
 import com.nox.feature.agent.data.local.entity.CheckpointEntity
 import com.nox.feature.agent.data.local.entity.CheckpointFileSnapshotEntity
+import com.nox.feature.agent.data.local.entity.KnowledgeEntryEntity
 import com.nox.feature.agent.data.local.entity.LlmCallRecordEntity
 import com.nox.feature.agent.data.local.entity.RootGrantEntity
 import com.nox.feature.agent.data.local.entity.TodoItemEntity
@@ -24,7 +26,7 @@ import com.nox.feature.workspace.data.local.entity.RemoteConnectionEntity
 import com.nox.feature.workspace.data.local.entity.RemoteMountEntity
 
 @Database(
-    entities = [AgentMessageEntity::class, ChatSessionEntity::class, AIProviderEntity::class, RemoteConnectionEntity::class, RemoteMountEntity::class, TodoItemEntity::class, CheckpointEntity::class, CheckpointFileSnapshotEntity::class, LlmCallRecordEntity::class, BackupTargetEntity::class, RootGrantEntity::class],
+    entities = [AgentMessageEntity::class, ChatSessionEntity::class, AIProviderEntity::class, RemoteConnectionEntity::class, RemoteMountEntity::class, TodoItemEntity::class, CheckpointEntity::class, CheckpointFileSnapshotEntity::class, LlmCallRecordEntity::class, BackupTargetEntity::class, RootGrantEntity::class, KnowledgeEntryEntity::class],
     version = AgentDatabase.SCHEMA_VERSION,
     exportSchema = true
 )
@@ -38,9 +40,10 @@ abstract class AgentDatabase : RoomDatabase() {
     abstract fun llmCallRecordDao(): LlmCallRecordDao
     abstract fun backupTargetDao(): BackupTargetDao
     abstract fun rootGrantDao(): RootGrantDao
+    abstract fun knowledgeEntryDao(): KnowledgeEntryDao
 
     companion object {
-        const val SCHEMA_VERSION = 68
+        const val SCHEMA_VERSION = 69
 
         /** 数据库文件名（落在 `databases/` 下，另有 Room 默认 WAL 模式产生的 `-wal`/`-shm`）。 */
         const val DATABASE_NAME = "nox_agent_db"

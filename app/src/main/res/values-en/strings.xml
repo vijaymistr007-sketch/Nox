@@ -2152,4 +2152,43 @@
     <string name="session_mgmt_tag_remote_connected">Remote · Connected</string>
     <string name="session_mgmt_tag_remote_offline">Remote / Offline</string>
     <string name="session_mgmt_view_content">View Messages</string>
+
+    <!-- Token usage panel -->
+    <string name="token_usage_title">Token Usage</string>
+    <string name="token_usage_context">Context</string>
+    <string name="token_usage_context_ratio">%1$s / %2$s · %3$d%%</string>
+    <string name="token_usage_cached">Cache hit</string>
+    <string name="token_usage_uncached">Uncached input</string>
+    <string name="token_usage_output">Output</string>
+    <string name="token_usage_reasoning">%1$s reasoning</string>
+    <string name="token_usage_session">Session</string>
+    <string name="token_usage_rounds_steps">%1$d turns · %2$d steps</string>
+    <string name="token_usage_duration">Model time</string>
+    <string name="token_usage_ttft">Avg TTFT</string>
+    <string name="token_usage_tps">Output speed (TPS)</string>
+    <string name="token_usage_calls">Calls</string>
+    <string name="token_usage_errors">%1$d failed</string>
+    <string name="token_usage_compact">Compact context</string>
+    <string name="token_usage_empty">No calls recorded in this session</string>
+    <string name="token_usage_estimated">estimated</string>
+    <string name="token_usage_open">Token usage</string>
+
+    <!-- Knowledge library -->
+    <string name="knowledge_title">Knowledge Library</string>
+    <string name="knowledge_search_hint">Search title, content or tags</string>
+    <string name="knowledge_extract">Extract from current session</string>
+    <string name="knowledge_new">New entry</string>
+    <string name="knowledge_empty">No entries yet — they accumulate as you chat</string>
+    <string name="knowledge_empty_search">No matching entries</string>
+    <string name="knowledge_pinned">Pinned</string>
+    <string name="knowledge_hits">Recalled %1$d times</string>
+    <string name="knowledge_edit_title">Edit entry</string>
+    <string name="knowledge_field_title">Title</string>
+    <string name="knowledge_field_content">Content</string>
+    <string name="knowledge_field_tags">Tags (comma separated)</string>
+    <string name="knowledge_delete_confirm">Delete this entry?</string>
+    <string name="knowledge_saved">Saved</string>
+    <string name="knowledge_save_failed">Save failed</string>
+    <string name="knowledge_pin">Pin</string>
+    <string name="knowledge_unpin">Unpin</string>
 </resources>

@@ -756,6 +756,10 @@ fun AppNavigation(
                 navController.navigate("settings?section=roles&from=chat")
                 if (!permanentDrawer) scope.launch { drawerState.snapTo(DrawerValue.Closed) }
             },
+            onNavigateToKnowledge = {
+                navController.navigate("knowledge")
+                if (!permanentDrawer) scope.launch { drawerState.snapTo(DrawerValue.Closed) }
+            },
             searchQuery = chatSearchQuery,
             searchState = chatSearchState,
             onSearchQueryChange = { agentViewModel.updateChatSearchQuery(it) },
@@ -985,6 +989,17 @@ fun AppNavigation(
                     WorkspaceBrowserScreen(
                         sessionId = sessionId,
                         rootPath = rootPath,
+                        onNavigateBack = { navController.popBackStack() }
+                    )
+                }
+            }
+            composable("knowledge") {
+                val knowledgeViewModel: com.nox.feature.agent.presentation.KnowledgeViewModel = hiltViewModel()
+                val activeSessionId by agentViewModel.currentSessionId.collectAsStateWithLifecycle()
+                CompactTypography(0.9f) {
+                    com.nox.feature.agent.presentation.component.KnowledgeLibraryScreen(
+                        viewModel = knowledgeViewModel,
+                        currentSessionId = activeSessionId,
                         onNavigateBack = { navController.popBackStack() }
                     )
                 }

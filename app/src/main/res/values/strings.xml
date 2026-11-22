@@ -2350,4 +2350,43 @@
     <string name="session_mgmt_tag_remote_connected">远程·已连接</string>
     <string name="session_mgmt_tag_remote_offline">远程/离线</string>
     <string name="session_mgmt_view_content">查看会话内容</string>
+
+    <!-- Token 用量面板 -->
+    <string name="token_usage_title">Token 用量</string>
+    <string name="token_usage_context">上下文用量</string>
+    <string name="token_usage_context_ratio">%1$s / %2$s · %3$d%%</string>
+    <string name="token_usage_cached">缓存命中</string>
+    <string name="token_usage_uncached">未缓存输入</string>
+    <string name="token_usage_output">输出</string>
+    <string name="token_usage_reasoning">其中推理 %1$s</string>
+    <string name="token_usage_session">会话统计</string>
+    <string name="token_usage_rounds_steps">%1$d 轮 %2$d 步</string>
+    <string name="token_usage_duration">模型用时</string>
+    <string name="token_usage_ttft">首 token 平均（TTFT）</string>
+    <string name="token_usage_tps">输出速度（TPS）</string>
+    <string name="token_usage_calls">调用次数</string>
+    <string name="token_usage_errors">失败 %1$d 次</string>
+    <string name="token_usage_compact">压缩上下文</string>
+    <string name="token_usage_empty">本会话还没有调用记录</string>
+    <string name="token_usage_estimated">估算</string>
+    <string name="token_usage_open">Token 用量</string>
+
+    <!-- 记忆知识库 -->
+    <string name="knowledge_title">记忆知识库</string>
+    <string name="knowledge_search_hint">搜索标题、内容或标签</string>
+    <string name="knowledge_extract">从当前会话提取</string>
+    <string name="knowledge_new">新建知识</string>
+    <string name="knowledge_empty">还没有知识条目，聊几轮后会自动沉淀</string>
+    <string name="knowledge_empty_search">没有匹配的条目</string>
+    <string name="knowledge_pinned">置顶</string>
+    <string name="knowledge_hits">召回 %1$d 次</string>
+    <string name="knowledge_edit_title">编辑知识</string>
+    <string name="knowledge_field_title">标题</string>
+    <string name="knowledge_field_content">内容</string>
+    <string name="knowledge_field_tags">标签（逗号分隔）</string>
+    <string name="knowledge_delete_confirm">删除这条知识？</string>
+    <string name="knowledge_saved">已保存</string>
+    <string name="knowledge_save_failed">保存失败</string>
+    <string name="knowledge_pin">置顶</string>
+    <string name="knowledge_unpin">取消置顶</string>
 </resources>

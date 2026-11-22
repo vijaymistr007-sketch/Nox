@@ -135,6 +135,7 @@ import compose.icons.feathericons.X
 import compose.icons.feathericons.Maximize
 import compose.icons.feathericons.Minimize
 import compose.icons.feathericons.Plus
+import compose.icons.feathericons.Activity
 import compose.icons.feathericons.Square
 import compose.icons.feathericons.Shield
 import kotlinx.coroutines.launch
@@ -219,6 +220,8 @@ internal fun ChatInputBar(
     onOpenProviders: () -> Unit = {},
     /** 点击输入区的 MCP 图标，直接打开 MCP 服务器设置页。 */
     onOpenMcp: () -> Unit = {},
+    /** 点击「+」右侧的用量图标，弹出 Token 用量面板。 */
+    onOpenTokenUsage: () -> Unit = {},
     /** 主页模型弹层的连通性测试：null（无设置页 ViewModel 的宿主）时弹层不显示测试按钮。 */
     onRunModelTest: (suspend (AIProviderConfig, String) -> ModelTestResult)? = null,
     modifier: Modifier = Modifier
@@ -669,6 +672,17 @@ internal fun ChatInputBar(
                         contentDescription = stringResource(R.string.chat_add_attachment),
                         onClick = { showAttachmentSheet = true }
                     )
+                    IconButton(
+                        onClick = onOpenTokenUsage,
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            FeatherIcons.Activity,
+                            contentDescription = stringResource(R.string.token_usage_open),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                     SendButton(
                         canSend = canSend,
                         hasContent = hasContent,

@@ -75,6 +75,22 @@ data class CallSummary(
     val retryCount: Long = 0
 )
 
+/**
+ * 单个会话的累计调用统计，供输入栏的 Token 用量面板使用。
+ * 全部字段用 COALESCE 兜底：会话尚无调用记录时 SUM 返回 NULL，Room 映射到非空 Long 会崩。
+ */
+data class SessionCallStats(
+    val calls: Int,
+    val inputTokens: Long,
+    val outputTokens: Long,
+    val cachedInputTokens: Long,
+    val cacheCreationTokens: Long,
+    val errors: Int,
+    val avgTtfbMillis: Double?,
+    val avgDurationMillis: Double?,
+    val retryCount: Long
+)
+
 /** 调用明细分页记录：单次调用 + 渠道名（LEFT JOIN ai_providers 取，渠道被删除后仍显示）。 */
 data class RecentCallRecord(
     @Embedded val record: LlmCallRecordEntity,
@@ -245,6 +261,24 @@ interface LlmCallRecordDao {
         providerId: String? = null,
         model: String? = null
     ): Flow<CallSummary>
+
+    /** 单个会话的累计统计；会话无记录时返回一行全零（COALESCE 保证非空）。 */
+    @Query(
+        """
+        SELECT COUNT(*) AS calls,
+               COALESCE(SUM(inputTokens), 0) AS inputTokens,
+               COALESCE(SUM(outputTokens), 0) AS outputTokens,
+               COALESCE(SUM(cachedInputTokens), 0) AS cachedInputTokens,
+               COALESCE(SUM(cacheCreationTokens), 0) AS cacheCreationTokens,
+               COALESCE(SUM(CASE WHEN status = 'error' THEN 1 ELSE 0 END), 0) AS errors,
+               AVG(ttfbMillis) AS avgTtfbMillis,
+               AVG(durationMillis) AS avgDurationMillis,
+               COALESCE(SUM(retryCount), 0) AS retryCount
+        FROM llm_call_records
+        WHERE sessionId = :sessionId
+        """
+    )
+    suspend fun getSessionStats(sessionId: String): SessionCallStats
 
     /** 当前周期调用总数，供分页显示总页数。 */
     @Query(

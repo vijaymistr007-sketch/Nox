@@ -111,6 +111,7 @@ import com.nox.core.ui.ChevronRotationStyle
 import com.nox.core.ui.ExpandableChevronIcon
 import com.nox.core.ui.containerOsLogo
 import compose.icons.FeatherIcons
+import compose.icons.feathericons.BookOpen
 import compose.icons.feathericons.ChevronDown
 import compose.icons.feathericons.ChevronRight
 import compose.icons.feathericons.CheckSquare
@@ -185,6 +186,8 @@ fun ChatDrawerContent(
     onNavigateToBrowser: (() -> Unit)? = null,
     onNavigateToSettings: () -> Unit,
     onNavigateToRoles: (() -> Unit)? = null,
+    /** 打开记忆知识库页；null 时不显示入口（如插件宿主未提供导航）。 */
+    onNavigateToKnowledge: (() -> Unit)? = null,
     searchQuery: String,
     searchState: ChatSearchState,
     onSearchQueryChange: (String) -> Unit,
@@ -396,6 +399,15 @@ fun ChatDrawerContent(
                     icon = FeatherIcons.Globe,
                     title = stringResource(R.string.browser_title),
                     onClick = onNavigateToBrowser,
+                    iconBackground = true
+                )
+                SettingsDivider()
+            }
+            if (onNavigateToKnowledge != null) {
+                SettingsRow(
+                    icon = FeatherIcons.BookOpen,
+                    title = stringResource(R.string.knowledge_title),
+                    onClick = onNavigateToKnowledge,
                     iconBackground = true
                 )
                 SettingsDivider()

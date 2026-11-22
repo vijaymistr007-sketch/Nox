@@ -730,6 +730,8 @@ fun AIChatPanel(
     val sessionOutputTokens = currentSession?.totalOutputTokens ?: 0
     val sessionLastInputTokens = currentSession?.lastInputTokens ?: 0
     val contextUsages by viewModel.contextUsages.collectAsStateWithLifecycle()
+    val sessionCallStats by viewModel.sessionCallStats.collectAsStateWithLifecycle()
+    var showTokenUsage by remember { mutableStateOf(false) }
     val messagesReady = messagesState.loaded && messagesState.sessionId == currentSessionId
     val runningTool by viewModel.runningTool.collectAsStateWithLifecycle()
     val isCompacting by viewModel.isCompacting.collectAsStateWithLifecycle()
@@ -2014,6 +2016,10 @@ fun AIChatPanel(
                 onModelSheetDismiss = onDismissModelSheetInOnboarding,
                 onOpenProviders = onNavigateToProviders,
                 onOpenMcp = onNavigateToMcp,
+                onOpenTokenUsage = {
+                    currentSessionId?.let(viewModel::refreshSessionCallStats)
+                    showTokenUsage = true
+                },
                 // 主页模型弹层的「测试」按钮：直接复用设置页的连通性测试链路，状态由弹层自己持有。
                 onRunModelTest = settingsViewModel?.let { svm -> { p, m -> svm.runModelTest(p, m) } },
                 modifier = Modifier
@@ -2021,6 +2027,26 @@ fun AIChatPanel(
                     .onboardingTarget(OnboardingStep.SEND_MESSAGE)
             )
             } // 悬浮层结束
+
+            if (showTokenUsage) {
+                val usage = contextUsages[currentSessionId]
+                val modelBudget = activeModelMetadata?.let {
+                    com.nox.feature.settings.domain.model.ModelContextPolicy.effectiveInputBudget(it)
+                } ?: 0
+                TokenUsageSheet(
+                    contextUsed = usage?.inputTokens ?: sessionLastInputTokens,
+                    contextLimit = if (modelBudget > 0) modelBudget else (usage?.inputBudget ?: 0),
+                    estimated = usage?.estimated ?: (sessionLastInputTokens <= 0 && currentSessionId != null),
+                    stats = currentSessionId?.let { sessionCallStats[it] },
+                    rounds = messages.count { it.role == MessageRole.USER },
+                    steps = messages.count { it.role == MessageRole.ASSISTANT },
+                    onCompact = {
+                        showTokenUsage = false
+                        viewModel.compactCurrentSession()
+                    },
+                    onDismiss = { showTokenUsage = false }
+                )
+            }
 
             // 悬浮授权弹窗：独立于底栏排版流，悬浮于输入框上方，避免撑大底栏高度导致消息列表被顶上去。
             // 用户上下滑动消息列表时跟随透明弱化，不遮挡阅读视线。

@@ -22,6 +22,7 @@ import com.nox.feature.agent.domain.notification.PendingNotification
 import com.nox.feature.agent.domain.session.SessionUseCase
 import com.nox.feature.agent.domain.session.MessagePersistenceUseCase
 import com.nox.feature.agent.domain.checkpoint.CheckpointManager
+import com.nox.feature.agent.domain.knowledge.KnowledgeRepository
 import com.nox.feature.agent.domain.permission.PermissionChoice
 import com.nox.feature.agent.domain.permission.PermissionScope
 import com.nox.feature.agent.domain.permission.ToolPermissionPolicyEngine
@@ -117,6 +118,7 @@ class StatefulAgentWorkflow @Inject constructor(
     private val messagePersistenceUseCase: MessagePersistenceUseCase,
     private val checkpointManager: CheckpointManager,
     private val llmCallRecordDao: LlmCallRecordDao,
+    private val knowledgeRepository: KnowledgeRepository,
     private val keyRotator: ProviderKeyRotator,
     private val agentNotificationCenter: AgentNotificationCenter,
     private val eventInjector: AgentEventInjector,
@@ -500,11 +502,20 @@ class StatefulAgentWorkflow @Inject constructor(
         val actionQueue = ArrayDeque<AgentAction>()
         // 模式提醒仅在模式变化时随最新用户消息注入一次（不进 system，避免切换时 system 前缀变化打断缓存）。
         val modeReminder = takeModeReminderIfChanged(currentContext.sessionId, currentContext.mode)
+        // 知识库召回：拼在本轮用户消息前面而不是塞进 system prompt，
+        // 保证 system 前缀稳定（KV 缓存），且召回内容不会落库污染历史。
+        val knowledgeBlock = withContext(Dispatchers.IO) {
+            runCatching {
+                knowledgeRepository.buildRecallBlock(userRequest, currentContext.projectRoot)
+            }.getOrNull()
+        }
+        val requestWithKnowledge = if (knowledgeBlock.isNullOrBlank()) userRequest
+        else "$knowledgeBlock\n\n$userRequest"
         actionQueue.addLast(
             AgentAction.InitRequest(
                 currentContext.history + AgentMessage.UserMessage(
                     id = currentContext.inputMessageId,
-                    content = if (modeReminder == null) userRequest else "$userRequest\n\n$modeReminder",
+                    content = if (modeReminder == null) requestWithKnowledge else "$requestWithKnowledge\n\n$modeReminder",
                     images = currentContext.inputImages
                 )
             )

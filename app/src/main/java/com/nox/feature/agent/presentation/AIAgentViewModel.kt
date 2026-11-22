@@ -22,6 +22,7 @@ import com.nox.feature.agent.domain.checkpoint.CheckpointManager
 import com.nox.feature.agent.data.local.dao.CheckpointDao
 import com.nox.feature.agent.data.local.dao.ChatSessionDao
 import com.nox.feature.agent.data.local.dao.LlmCallRecordDao
+import com.nox.feature.agent.data.local.dao.SessionCallStats
 import com.nox.feature.agent.data.local.dao.TodoItemDao
 import com.nox.feature.agent.domain.model.TodoItem
 import com.nox.feature.agent.data.local.entity.AgentMessageEntity
@@ -44,6 +45,7 @@ import com.nox.feature.settings.data.repository.ModelReasoningEffortRepository
 import com.nox.feature.settings.data.repository.StartupSessionMode
 import com.nox.feature.agent.domain.model.AgentContext
 import com.nox.feature.agent.domain.model.AgentImage
+import com.nox.feature.agent.domain.knowledge.KnowledgeRepository
 import com.nox.feature.agent.domain.model.AgentMessage
 import com.nox.feature.agent.domain.model.AgentMode
 import com.nox.feature.agent.domain.model.GoalStatus
@@ -147,6 +149,7 @@ class AIAgentViewModel @Inject constructor(
     private val agentMessageDao: AgentMessageDao,
     private val chatSessionDao: ChatSessionDao,
     private val llmCallRecordDao: LlmCallRecordDao,
+    private val knowledgeRepository: KnowledgeRepository,
     private val modelCostCalculator: ModelCostCalculator,
     private val aiProviderRepository: AIProviderRepository,
     private val defaultModelSettingsRepository: DefaultModelSettingsRepository,
@@ -1021,6 +1024,18 @@ class AIAgentViewModel @Inject constructor(
     private val _compactionFailedSessions = MutableStateFlow<Set<String>>(emptySet())
     private val _contextUsages = MutableStateFlow<Map<String, AgentEvent.ContextUsage>>(emptyMap())
     val contextUsages: StateFlow<Map<String, AgentEvent.ContextUsage>> = _contextUsages.asStateFlow()
+
+    /** 按会话聚合的累计调用统计，供 Token 用量面板展示；打开面板时按需刷新。 */
+    private val _sessionCallStats = MutableStateFlow<Map<String, SessionCallStats>>(emptyMap())
+    val sessionCallStats: StateFlow<Map<String, SessionCallStats>> = _sessionCallStats.asStateFlow()
+
+    fun refreshSessionCallStats(sessionId: String) {
+        if (sessionId.isBlank()) return
+        viewModelScope.launch {
+            val stats = runCatching { llmCallRecordDao.getSessionStats(sessionId) }.getOrNull() ?: return@launch
+            _sessionCallStats.value = _sessionCallStats.value + (sessionId to stats)
+        }
+    }
 
     private val _llmCallEvents = MutableSharedFlow<LlmCallEvent>(extraBufferCapacity = 16)
     /** 每次单次 LLM 请求返回事件（携带单次 Token 统计）。 */
@@ -2276,6 +2291,26 @@ class AIAgentViewModel @Inject constructor(
                             .isAtLeast(Lifecycle.State.STARTED)
                         if (!inForeground && agentSoundSettings.isEnabled()) {
                             showAgentCompletedNotification(modelRequest)
+                        }
+                        // 知识库：本轮结束后异步抽取，不阻塞 UI；子代理会话不单独沉淀，避免重复。
+                        if (!isSub) {
+                            val snapshot = messagesState.value.messages
+                            val projectRoot = sessionUseCase.getSessionById(sessionId)?.workspacePath
+                            viewModelScope.launch(Dispatchers.IO) {
+                                runCatching {
+                                    knowledgeRepository.extractAndStore(
+                                        sessionId = sessionId,
+                                        projectRoot = projectRoot?.takeIf { it.isNotBlank() },
+                                        messages = snapshot.mapNotNull { ui ->
+                                            when (ui.role) {
+                                                MessageRole.USER -> AgentMessage.UserMessage(id = ui.id, content = ui.content)
+                                                MessageRole.ASSISTANT -> AgentMessage.AssistantMessage(id = ui.id, content = ui.content)
+                                                else -> null
+                                            }
+                                        }
+                                    )
+                                }
+                            }
                         }
                     }
                     is AgentEvent.ModeChanged -> {
